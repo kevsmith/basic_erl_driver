@@ -39,7 +39,7 @@ debug:
 
 .SUFFIXES: .o .c .h
 
-../priv/%_drv.so: %_drv.o drv_util.o
+../priv/%_drv.so: %_drv.o driver_comm.o smaz.o
 	mkdir -p ../priv
 	$(CC) $(CFLAGS) $(DEFS) $(DEBUG) $(LDFLAGS) -o $@ $^ @LIBEI@
 
@@ -48,11 +48,8 @@ debug:
 
 clean:
 	rm -rf *.o *.a $(OUTPUTFILES)
+	rm -f *flymake*
 
 install:
 	install -d $(ERLDIR)/lib/$(PACKAGE_NAME)-$(PACKAGE_VERSION)/priv
 	cp -r `pwd`/../priv $(ERLDIR)/lib/$(PACKAGE_NAME)-$(PACKAGE_VERSION)/
-
-package:
-	install -d `pwd`/../.pkgtmp/$(PACKAGE_NAME)-$(PACKAGE_VERSION)/priv
-	cp -r `pwd`/../priv/* `pwd`/../.pkgtmp/$(PACKAGE_NAME)-$(PACKAGE_VERSION)/priv

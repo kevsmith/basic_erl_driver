@@ -19,3 +19,46 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
+
+#define COMMAND_SIZE 2
+
+#include <string.h>
+#include <strings.h>
+
+#include <erl_driver.h>
+
+#include "driver_comm.h"
+
+inline int read_int32(char **data) {
+  char *d = *data;
+  int value = ((((int)(((unsigned char*) (d))[0]))  << 24) |
+	       (((int)(((unsigned char*) (d))[1]))  << 16) |
+	       (((int)(((unsigned char*) (d))[2]))  << 8)  |
+	       (((int)(((unsigned char*) (d))[3]))));
+  (*data) += 4;
+  return value;
+}
+
+char *read_command(char **data) {
+  char *buf = driver_alloc(COMMAND_SIZE + 1);
+  memset(buf, 0, COMMAND_SIZE + 1);
+  memcpy(buf, (const char *) *data, COMMAND_SIZE);
+  (*data) += 2;
+  return buf;
+}
+
+char *read_string(char **data) {
+  int length = read_int32(data);
+  char *buf = NULL;
+  if (length > 0) {
+    buf = (char *) driver_alloc(length + 1);
+    memset(buf, 0, length + 1);
+    memcpy(buf, (const char *) *data, length);
+    (*data) += length;
+  }
+  else {
+    buf = (char *) driver_alloc(1);
+    memset(buf, 0, 1);
+  }
+  return buf;
+}

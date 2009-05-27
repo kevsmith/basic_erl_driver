@@ -19,23 +19,8 @@ clean:
 distclean: clean
 	rm -rf autom4te.cache config.log config.status
 	rm -f Makefile c/Makefile erl/Makefile
+	rm -f c/*flymake*
 
 install: all
 	(cd c; $(MAKE) install)
 	(cd erl; $(MAKE) install)
-
-debug:
-	(cd c;$(MAKE) debug)
-	(cd erl;$(MAKE) debug)
-
-release: all
-	mkdir -p $(RELDIR)
-	cp -r ebin $(RELDIR)/
-	cp -r priv $(RELDIR)/
-	mkdir -p $(RELDIR)/src
-	cp -r erl/*.erl $(RELDIR)/src/
-	cp -r c/*.c $(RELDIR)/src
-	cp -r c/*.h $(RELDIR)/src
-	sed s/?VERSION/$(PACKAGE_VERSION)/ releases/meg.rel > $(RELDIR)/meg.rel
-	sed s/?VERSION/$(PACKAGE_VERSION)/ ebin/meg.app > $(RELDIR)/ebin/meg.app
-	cd $(RELDIR); erl -pa ./ebin -eval "systools:make_script(\"meg\", [local])." -eval "systools:make_tar(\"meg\")." -s erlang halt

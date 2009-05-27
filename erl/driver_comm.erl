@@ -18,43 +18,19 @@
 %% OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 %% THE SOFTWARE.
 
--module(basic_driver).
+-module(driver_comm).
 
--export([start/0, stop/0, echo/1, reverse/1]).
--export([compress/1, decompress/1]).
+-export([pack/2]).
 
-start() ->
-  ok = load_driver().
+pack(Cmd, Terms) when length(Cmd) == 2 ->
+  NewTerms = lists:foldr(fun(T, Acc) -> marshal_data(T, Acc) end, [], Terms),
+  list_to_binary(lists:flatten([[Cmd], [NewTerms]])).
 
-stop() ->
-  erl_ddll:unload("basic_drv").
-
-echo(Text) ->
-  call_driver("ec", [Text]).
-
-reverse(Text) ->
-  call_driver("rv", [Text]).
-
-compress(Text) ->
-  call_driver("sc", [Text]).
-
-decompress(Text) ->
-  call_driver("sd", [Text]).
-
-%% Private functions
-call_driver(Command, Args) ->
-  P = open_port({spawn, basic_drv}, [binary]),
-  Marshalled = driver_comm:pack(Command, Args),
-  port_command(P, Marshalled),
-  Result = receive
-             Response ->
-               Response
-           after 100 ->
-               {error, timeout}
-           end,
-  port_close(P),
-  Result.
-
-load_driver() ->
-  SearchDir = filename:join([filename:dirname(code:which(?MODULE)), "..", "priv"]),
-  erl_ddll:load(SearchDir, "basic_drv").
+%% Internal functions
+marshal_data(Term, Acc) when is_integer(Term) ->
+  [<<Term:32>>|Acc];
+marshal_data(Term, Acc) when is_list(Term) ->
+  marshal_data(list_to_binary(Term), Acc);
+marshal_data(Term, Acc) when is_binary(Term) ->
+  S = size(Term),
+  [[<<S:32>>, Term]|Acc].
