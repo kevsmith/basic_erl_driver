@@ -3844,7 +3844,7 @@ _ACEOF
 fi
 
 
-ac_config_files="$ac_config_files c/Makefile erl/Makefile Makefile"
+ac_config_files="$ac_config_files c_src/Makefile Makefile"
 
 cat >confcache <<\_ACEOF
 # This file is a shell script that caches the results of configure
@@ -4413,8 +4413,7 @@ cat >>$CONFIG_STATUS <<\_ACEOF
 for ac_config_target in $ac_config_targets
 do
   case $ac_config_target in
-    "c/Makefile") CONFIG_FILES="$CONFIG_FILES c/Makefile" ;;
-    "erl/Makefile") CONFIG_FILES="$CONFIG_FILES erl/Makefile" ;;
+    "c_src/Makefile") CONFIG_FILES="$CONFIG_FILES c_src/Makefile" ;;
     "Makefile") CONFIG_FILES="$CONFIG_FILES Makefile" ;;
 
   *) { { echo "$as_me:$LINENO: error: invalid argument: $ac_config_target" >&5
