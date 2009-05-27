@@ -1,6 +1,8 @@
 PACKAGE_NAME = @PACKAGE_NAME@
 PACKAGE_VERSION = @PACKAGE_VERSION@
 RELDIR = releases/$(PACKAGE_NAME)-$(PACKAGE_VERSION)
+EBIN_DIRS = ebin
+ERL= @ERL@
 
 ifeq ($(shell uname),Linux)
 	ARCH = linux
@@ -8,13 +10,24 @@ else
 	ARCH = macosx
 endif
 
-all:
-	(cd c;$(MAKE))
-	(cd erl;$(MAKE))
+all:	driver erl ebin/$(PACKAGE_NAME).app docs
+
+.PHONY: driver erl docs clean distclean
+
+driver:
+	(cd c_src;$(MAKE))
+
+erl: ebin
+	@$(ERL) -pa $(EBIN_DIRS) -noinput +B \
+	  -eval 'case make:all() of up_to_date -> halt(0); error -> halt(1) end.'
+
+ebin/$(PACKAGE_NAME).app: ebin src/$(PACKAGE_NAME).app
+	@cp src/$(PACKAGE_NAME).app $@
 
 clean:
-	(cd c;$(MAKE) clean)
-	(cd erl;$(MAKE) clean)
+	(cd c_src;$(MAKE) clean)
+	@echo "removing:"
+	@rm -fv ebin/*.beam ebin/*.app
 
 distclean: clean
 	rm -rf autom4te.cache config.log config.status
@@ -23,4 +36,6 @@ distclean: clean
 
 install: all
 	(cd c; $(MAKE) install)
-	(cd erl; $(MAKE) install)
+
+docs: $(wildcard src/*.erl)
+	@$(ERL) -noshell -run edoc_run application '$(PACKAGE_NAME)' '"."' "[{def, [{vsn, \"$(PACKAGE_VERSION)\"}]}]"
